@@ -1,0 +1,23 @@
+PHP Script to easily download and move downloaded torrents
+
+1. Requirements
+    - PHP 5.4 or higher
+    - xmlrpc extension enabled
+    - config.ini
+
+2. How to use
+    console.php require 3 arguments. 
+        1: source folder
+        2: torrentname
+        3: label
+ 
+3. config.ini settings
+    - username, password and lang is required settings. This is your login details for OpenSubtitles.org
+    - delete_extra = true|false  will automatically try and clean up the folder by removing videofiles less than 70MB and txt, nfo files.
+    - error_level = 1|2|3|4  for logging, remove this config entry for no logging.
+    - output_dir[<label>] = <target directory>   if specified, the torrents matching the label will be moved to the "target director";
+       
+       
+4. Use with uTorrent.
+Just add the following line to your Preferences - Advanced - Run Program when torrents finishes.
+    c:\php\php.exe -q console.php "%D" "%N" "%L" "%K" "%F"
