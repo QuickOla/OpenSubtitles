@@ -70,14 +70,6 @@ if ( !empty($e)){
 }
 
 
-
-//Input: "D:\ServerFolders\Torrents\!.Movies\7500.2014.BRRip.XViD-juggs[ETRG]" "7500.2014.BRRip.XViD-juggs[ETRG]" "!.Movies" "multi" "7500-ETRG.nfo"
-/*$argv = array();
-$argv[1] = "D:\\Temp\\Movies\\in\\Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
-$argv[2] = "Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
-$argv[3] = "!.Movies";
-$argv[4] = "multi";
-  */
 logger::debug(sprintf( "handling dir:%s torrent:%s label:%s", $argv[1], $argv[2], $argv[3] ) );
 
 
