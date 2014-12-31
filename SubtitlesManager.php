@@ -15,7 +15,7 @@ class SubtitlesManager
     private $lang;
     private $userAgent;
     
-    public function __construct($username, $password, $lang, $userAgent = 'OS Test User Agent')
+    public function __construct($username, $password, $lang, $userAgent = 'OSTestUserAgent')
     {
         $this->username = $username;
         $this->password = $password;
@@ -133,9 +133,9 @@ class SubtitlesManager
      * @param string $url
      * @param string $originalfile
      */
-    public function downloadSubtitle($url, $originalfile)
+    public function downloadSubtitle($url, $originalfile, $language)
     {
-        $subtitleFile = preg_replace("/\\.[^.\\s]{3,4}$/", "", $originalfile) . '.srt';
+        $subtitleFile = preg_replace("/\\.[^.\\s]{3,4}$/", "", $originalfile) . "." . $language . '.srt';
         $subtitleContent = gzdecode(file_get_contents($url));
         
         file_put_contents($subtitleFile, $subtitleContent);

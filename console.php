@@ -70,8 +70,34 @@ if ( !empty($e)){
 }
 
 
-logger::debug(sprintf( "handling dir:%s torrent:%s label:%s", $argv[1], $argv[2], $argv[3] ) );
 
+
+//c:\php54\php.exe -q c:\torrenthandler\console.php "%D" "%N" "%L" "%K" "%F" "%S"
+//Input: "D:\ServerFolders\Torrents\!.Movies\7500.2014.BRRip.XViD-juggs[ETRG]" "7500.2014.BRRip.XViD-juggs[ETRG]" "!.Movies" "multi" "7500-ETRG.nfo"
+$argv = array();
+/*$argv[1] = "D:\\Temp\\Movies\\in\\Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
+$argv[2] = "Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
+$argv[3] = "!.Movies";
+$argv[4] = "multi";*/
+/*$argv[1] = "D:\\Temp\\os_test\\Homeland\\Season 4";
+$argv[2] = "Homeland.S04E10.HDTV.x264-KILLERS.[VTV]";
+$argv[3] = "!.Tv";
+$argv[4] = "multi";
+$argv[6] = "11";
+  */
+
+logger::debug(sprintf( "handling dir:%s torrent:%s label:%s state:%s", $argv[1], $argv[2], $argv[3], $argv[6] ) );
+
+if ( empty($argv[3]) )
+{
+    exit;
+}
+
+if ( (int)$argv[6] != 11 )
+{
+    logger::debug(sprintf( "state:%s is not finished, ignore... TODO: handle some other states here later.", $argv[6] ) );
+    exit;
+}
 
 
 
@@ -83,15 +109,19 @@ if ( !is_dir($argv[1]) ){
     return 1;
 }
 
-
+   
+   
 
 $extensions = array("txt", "nfo", "mkv", "avi", "mp4" );
 $file = "";
+$episode = "";
 // Loop trough all files in folder
 $objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($argv[1]), RecursiveIteratorIterator::SELF_FIRST);
 foreach($objects as $name => $object){
     $size = filesize64($name);
     $ext = $object->getExtension();
+    
+    if ( $object->getFilename() == "." || $object->getFilename() == ".." ){ continue; }
     
     logger::debug(sprintf( "file:%s size:%s ext:%s", $name, $size, $ext ) );
     
@@ -109,6 +139,8 @@ foreach($objects as $name => $object){
     if ( $size > 70000000 && empty($file) ){
         logger::debug(sprintf("finding subtitles for file:%s", $name));
         $file = $name;
+        preg_match('/.*(S\d{1,2}E\d{1,2}).*/i',$file, $episode);
+        $episode = count($episode) == 2 ? $episode[1] : "" ;
     }
 }
 
@@ -132,15 +164,28 @@ if ( !empty($e)){
 require_once 'SubtitlesManager.php';
 
 
-
-$manager = new OpenSubtitles\SubtitlesManager($config['username'], $config['password'], $config['lang']);
-$sub = $manager->getSubtitleUrls($file);
-if (!empty($sub) && !empty($sub[0])) {
-    $file = $manager->downloadSubtitle($sub[0], $file);
-    logger::info(sprintf("subtitlefile %s downloaded", $file ) );
-} else {
-    logger::info(sprintf("couldnt find subtitles for torrent:%s", $argv[2] ));
+// fetch subtitles
+$languages = explode(";", $config['lang']);
+if ( is_array($languages) )
+{
+    for( $i = 0; $i < count($languages); $i++ )
+    {
+        $subtitleFile = preg_replace("/\\.[^.\\s]{3,4}$/", "", $file) . "." . $languages[$i] . '.srt';
+        if ( !file_exists($subtitleFile))
+        {
+            $manager = new OpenSubtitles\SubtitlesManager($config['username'], $config['password'], $languages[$i]);
+            $sub = $manager->getSubtitleUrls($file);
+            if (!empty($sub) && !empty($sub[0])) {
+                $langfile = $manager->downloadSubtitle($sub[0], $file, $languages[$i]);
+                logger::info(sprintf("subtitlefile %s downloaded", $langfile ) );
+                
+            } else {
+                logger::info(sprintf("couldnt find subtitle (%s) for torrent:%s", $languages[$i], $argv[2] ));
+            }
+        }
+    }    
 }
+
 
 
 
