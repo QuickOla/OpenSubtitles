@@ -74,77 +74,13 @@ if ( !empty($e)){
 
 //c:\php54\php.exe -q c:\torrenthandler\console.php "%D" "%N" "%L" "%K" "%F" "%S"
 //Input: "D:\ServerFolders\Torrents\!.Movies\7500.2014.BRRip.XViD-juggs[ETRG]" "7500.2014.BRRip.XViD-juggs[ETRG]" "!.Movies" "multi" "7500-ETRG.nfo"
-//$argv = array();
-/*$argv[1] = "D:\\Temp\\Movies\\in\\Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
-$argv[2] = "Sin.City.A.Dame.to.Kill.For.2014.HDRip.XviD-SaM[ETRG]";
-$argv[3] = "!.Movies";
-$argv[4] = "multi";*/
-/*$argv[1] = "D:\\Temp\\os_test\\Homeland\\Season 4";
-$argv[2] = "Homeland.S04E10.HDTV.x264-KILLERS.[VTV]";
-$argv[3] = "!.Tv";
-$argv[4] = "multi";
-$argv[6] = "11";
-  */
 
-logger::debug(sprintf( "handling dir:%s torrent:%s label:%s state:%s", $argv[1], $argv[2], $argv[3], $argv[6] ) );
 
-if ( empty($argv[3]) )
-{
-    exit;
-}
-
-if ( (int)$argv[6] != 11 )
-{
-    logger::debug(sprintf( "state:%s is not finished, ignore... TODO: handle some other states here later.", $argv[6] ) );
-    exit;
-}
+logger::debug(sprintf( "handling file %s", $argv[1] ) );
 
 
 
-// Check if folder exists
-if ( !is_dir($argv[1]) ){
-    $e = sprintf( "error! folder %s doesnt exist", $argv[1] );
-    echo $e;
-    logger::warning($e);
-    return 1;
-}
-
-   
-   
-
-$extensions = array("txt", "nfo", "mkv", "avi", "mp4" );
-$file = "";
-$episode = "";
-// Loop trough all files in folder
-$objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($argv[1]), RecursiveIteratorIterator::SELF_FIRST);
-foreach($objects as $name => $object){
-    $size = filesize64($name);
-    $ext = $object->getExtension();
-    
-    if ( $object->getFilename() == "." || $object->getFilename() == ".." ){ continue; }
-    
-    logger::debug(sprintf( "file:%s size:%s ext:%s", $name, $size, $ext ) );
-    
-    if ( $config["delete_extras"] == true && !$object->isDir() ){
-        if ( $size < 70000000 && in_array($ext, $extensions) ){
-            logger::debug(sprintf("delete file:%s", $name));
-            @unlink($name);
-            if ( file_exists($name)){
-                logger::error(sprintf("couldnt delete file:%s",$name));
-            }
-        }
-    }
-    
-    // Guess this is the file to check for subtitles
-    if ( $size > 70000000 && empty($file) ){
-        logger::debug(sprintf("finding subtitles for file:%s", $name));
-        $file = $name;
-        preg_match('/.*(S\d{1,2}E\d{1,2}).*/i',$file, $episode);
-        $episode = count($episode) == 2 ? $episode[1] : "" ;
-    }
-}
-
-
+$file = $argv[1];
 
 if (empty($file)) {
     $e = 'error! you must supply a file';
@@ -189,25 +125,4 @@ if ( is_array($languages) )
 
 
 
-
-// Handle folder and move to correct place based on settings
-$output_dirs = $config["output_dir"];
-
-if ( !isset($output_dirs) || !is_array($output_dirs) ){
-    logger::info( sprintf("no output dirs defined for label: %s", $argv[3] ) );
-}else{
-    if ( !array_key_exists($argv[3], $output_dirs )){
-        logger::info( sprintf("no output dirs defined for label: %s", $argv[3] ) );
-    }else{
-        $new_folder = str_replace( "\\", "/", $output_dirs[$argv[3]] . "\\" . $argv[2] );
-        logger::debug( sprintf("output dir for label: %s defined as: %s", $argv[3], $new_folder ) );
-        
-        logger::debug(sprintf("moving folder:%s to %s", $argv[1],$new_folder ));
-        if ( !rename(str_replace("\\", "/", $argv[1]), $new_folder) ){
-            $e = sprintf("could not move folder:%s to %s", $argv[1],$new_folder );
-            echo $e;
-            logger::error($e);
-            return 1;
-        }
-    }          
-}
+                  
